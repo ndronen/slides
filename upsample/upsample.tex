@@ -13,6 +13,9 @@
 \usepackage{amsmath}
 \usepackage{docmute}
 \usepackage{hyperref}
+\usepackage{multirow}
+%\usepackage[export]{adjustbox}
+\usepackage{graphicx}
 \begin{document}
 
 %\hspace*{\fill} \\
@@ -26,7 +29,15 @@
 \end{frame}
 
 
-\begin{frame}{Transposition and Networks}
+\begin{frame}{Transposed Convolution (wrongly, ``Deconvolution'')}
+\centering
+\includegraphics[width=0.75\textwidth]{figures/zeiler-transposed} \\
+\href{https://arxiv.org/abs/1311.2901}
+{\textcolor{blue}{Visualizing and Understanding Convolutional Networks, Zeiler and Fergus, arXiv:1311.2901 [cs.CV]}}
+\end{frame}
+
+
+\begin{frame}{Why ``Transposition''?}
 Error is propagated back through e.g. a multi-layer perceptron via transposition of weight matrices. \\
 \vspace{2mm}
 \centering
@@ -73,14 +84,6 @@ x = \mathbf{H}^{\color{red}{T}} y.
 \end{frame}
 
 
-\begin{frame}{Transposed Convolution}
-\centering
-\includegraphics[width=0.75\textwidth]{figures/zeiler-transposed} \\
-\href{https://arxiv.org/abs/1311.2901}
-{\textcolor{blue}{Visualizing and Understanding Convolutional Networks, Zeiler and Fergus, arXiv:1311.2901 [cs.CV]}}
-\end{frame}
-
-
 \begin{frame}{Subpixel Convolution}
 \centering
 \includegraphics[width=0.85\textwidth]{figures/shi-subpixel} \\
@@ -105,16 +108,72 @@ x = \mathbf{H}^{\color{red}{T}} y.
 \end{frame}
 
 
-\begin{frame}
-\begin{itemize}
-\item Experimental setup (task, data, framework, models)
-\item Quantitative results (use PSNR (db) not MSE)
-\item Qualitative results
-\item Error analysis
-\item Performance analysis
-\item Availability of code (source file and Jupyter notebook)
-\item Visualizations of filter weights and biases?
-\end{itemize}
+
+
+\begin{frame}{Test bed: superresolution with drive images}
+\centering
+Upsampling from $60 \times 45 \rightarrow 480 \times 360$.
+\begin{table}
+\begin{tabular}{ccccc}
+Resolution                           & NN Conv & BL Conv & SP Conv & XP Conv \\
+\hline
+\multirow{4}{*}{$120 \times 90$}     & NN      & BL      &         & \\
+                                     & Conv    & Conv    & Conv    & XP Conv \\
+                                     & PReLU   & PReLU   & PReLU   & PReLU \\
+                                     &         &         & Shuffle & \\
+\hline
+\multirow{4}{*}{$240 \times 180$}    & NN      & BL      &         & \\
+                                     & Conv    & Conv    & Conv    & XP Conv \\
+                                     & PReLU   & PReLU   & PReLU   & PReLU \\
+                                     &         &         & Shuffle & \\
+\hline
+\multirow{4}{*}{$480 \times 360$}    & NN      & BL      &         & \\
+                                     & Conv    & Conv    & Conv    & XP Conv \\
+                                     & PReLU   & PReLU   & PReLU   & PReLU \\
+                                     &         &         & Shuffle & \\
+\end{tabular}
+\end{table}
+\end{frame}
+
+
+\begin{frame}{Upsampling without Training}
+\includegraphics[width=1.0\textwidth, height=\textheight, trim={4cm 1cm 4cm 1cm},clip]{figures/bilinear-conv-initialization}
+\end{frame}
+
+
+\begin{frame}{Quantitative results - PSNR}
+\begin{tabular}{lcccccc}
+\hline
+{PSNR} &  BL &  BL Conv &  NN &  NN Conv &  SP Conv &  XP Conv \\
+\hline
+Min         &  18 &       18 &  18 &       19 &             \textbf{20} &               18 \\
+Max         &  25 &       27 &  26 &       \textbf{28} &             \textbf{28} &               26 \\
+Mean        &  23 &       23 &  23 &       \textbf{25} &             \textbf{25} &               23 \\
+%Std.        &   2 &        2 &   2 &        2 &              2 &                2 \\
+%Median      &  23 &       23 &  23 &       25 &             \textbf{26} &               24 \\
+N. Params   &   0 &      261 &   0 &      261 &           1044 &              261 \\
+\hline
+\end{tabular}
+\end{frame}
+
+\begin{frame}{Qualitative results}
+\includegraphics[width=1.0\textwidth]{figures/xposed-conv-highest-accuracy}
+\end{frame}
+
+\begin{frame}{Qualitative results}
+\includegraphics[width=1.0\textwidth]{figures/bilinear-conv-lowest-accuracy}
+\end{frame}
+
+\begin{frame}{Runtime performance}
+\includegraphics[width=1.0\textwidth]{figures/small-runtime-histogram}
+\end{frame}
+
+\begin{frame}{Error analysis}
+\includegraphics[height=1.0\textheight,width=1.0\textwidth]{figures/error-analysis}
+\end{frame}
+
+\begin{frame}{Source code available}
+We've put the code for reproducing our results in a Git \href{https://source-americas.it.here.com/projects/1614-had-sensing-and-perception-team/repositories/6722/source/master/upsampling}{\textcolor{blue}{repository}}.  It contains a script and module for training the models and a Jupyter notebook for creating the slides and tables. See the \texttt{README.md} for details.
 \end{frame}
 
 \end{document}
